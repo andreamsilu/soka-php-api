@@ -12,6 +12,42 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/UserRepository.php';
 
+/**
+ * Send the OTP to the given MSISDN via external SMS API.
+ */
+function send_otp_via_sms(string $msisdn, string $otp): bool
+{
+    $payload = [
+        'msisdn' => $msisdn,
+        'text'   => 'Your OTP code is ' . $otp,
+    ];
+
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL            => SMS_API_URL,
+        CURLOPT_POST           => true,
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'securityKey: ' . SMS_API_SECURITY_KEY,
+        ],
+        CURLOPT_POSTFIELDS     => json_encode($payload),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 10,
+    ]);
+
+    $responseBody = curl_exec($ch);
+    $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+    if ($responseBody === false) {
+        curl_close($ch);
+        return false;
+    }
+
+    curl_close($ch);
+
+    return $httpCode >= 200 && $httpCode < 300;
+}
+
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -66,10 +102,11 @@ try {
     exit;
 }
 
-// TODO: integrate with real SMS provider here (send $otp to $msisdn)
+// Send the OTP via external SMS provider
+$smsSent = send_otp_via_sms($msisdn, $otp);
 
 $response = [
-    'message' => 'OTP sent successfully',
+    'message' => $smsSent ? 'OTP sent successfully' : 'OTP generated, but SMS sending may have failed',
 ];
 
 // Only expose OTP in non-production environments for testing purposes.
