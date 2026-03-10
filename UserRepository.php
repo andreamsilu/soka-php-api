@@ -12,6 +12,14 @@ function normalize_msisdn(string $msisdn): string
     return preg_replace('/[\s\-\(\)]/', '', $msisdn) ?? $msisdn;
 }
 
+function is_valid_msisdn(string $msisdn): bool
+{
+    $normalized = normalize_msisdn($msisdn);
+
+    // Basic international number pattern: optional +, 10–15 digits
+    return $normalized !== '' && preg_match('/^\+?\d{10,15}$/', $normalized) === 1;
+}
+
 function find_user_by_msisdn(string $msisdn): ?array
 {
     $pdo = get_pdo();

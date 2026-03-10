@@ -43,6 +43,18 @@ if ($msisdn === '' || $code === '') {
     exit;
 }
 
+if (!is_valid_msisdn($msisdn)) {
+    http_response_code(400);
+    echo json_encode(['message' => 'Valid MSISDN is required']);
+    exit;
+}
+
+if (preg_match('/^\d{6}$/', $code) !== 1) {
+    http_response_code(400);
+    echo json_encode(['message' => 'Invalid code format']);
+    exit;
+}
+
 // Read latest unused OTP for this msisdn from user_otp
 try {
     $pdo = get_pdo();

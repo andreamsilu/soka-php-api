@@ -34,11 +34,11 @@ if (!is_array($data)) {
 }
 
 $msisdn = isset($data['MSISDN']) ? (string)$data['MSISDN'] : '';
-$msisdn = preg_replace('/[\s\-\(\)]/', '', $msisdn) ?? $msisdn;
+$msisdn = normalize_msisdn($msisdn);
 
-if ($msisdn === '') {
+if ($msisdn === '' || !is_valid_msisdn($msisdn)) {
     http_response_code(400);
-    echo json_encode(['message' => 'MSISDN is required']);
+    echo json_encode(['message' => 'Valid MSISDN is required']);
     exit;
 }
 
@@ -70,9 +70,12 @@ try {
 
 $response = [
     'message' => 'OTP sent successfully',
-    // NOTE: For production, remove this field. It is useful for testing only.
-    'otp'     => $otp,
 ];
+
+// Only expose OTP in non-production environments for testing purposes.
+if (defined('APP_ENV') && APP_ENV !== 'production') {
+    $response['otp'] = $otp;
+}
 
 echo json_encode($response);
 
