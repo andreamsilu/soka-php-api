@@ -3,7 +3,9 @@
  * POST /sms/post/web
  * Request OTP for a phone number.
  * Expects header: securityKey
- * Body JSON or form: { MSISDN: string }
+ * Body JSON or form: { MSISDN: string, text?: string }
+ * - If "text" is provided, the OTP will be injected into that text by replacing
+ *   "{otp}" or "{OTP}" tokens, or appended if no token is present.
  */
 
 declare(strict_types=1);
@@ -13,13 +15,13 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/UserRepository.php';
 
 /**
- * Send the OTP to the given MSISDN via external SMS API.
+ * Send an SMS message to the given MSISDN via external SMS API.
  */
-function send_otp_via_sms(string $msisdn, string $otp): bool
+function send_otp_via_sms(string $msisdn, string $messageText): bool
 {
     $payload = [
         'msisdn' => $msisdn,
-        'text'   => 'Your OTP code is ' . $otp,
+        'text'   => $messageText,
     ];
 
     $ch = curl_init();
@@ -81,6 +83,18 @@ if ($msisdn === '' || !is_valid_msisdn($msisdn)) {
 // Generate a 6-digit OTP
 $otp = (string) random_int(100000, 999999);
 
+// Determine SMS text (either provided by caller or default)
+$textTemplate = isset($data['text']) ? (string)$data['text'] : '';
+if ($textTemplate !== '') {
+    // Replace placeholder tokens if present; otherwise append OTP.
+    $smsText = str_replace(['{otp}', '{OTP}'], $otp, $textTemplate);
+    if ($smsText === $textTemplate) {
+        $smsText .= ' ' . $otp;
+    }
+} else {
+    $smsText = 'Your OTP code is ' . $otp;
+}
+
 // Store OTP in MySQL table user_otp
 try {
     $pdo = get_pdo();
@@ -103,7 +117,7 @@ try {
 }
 
 // Send the OTP via external SMS provider
-$smsSent = send_otp_via_sms($msisdn, $otp);
+$smsSent = send_otp_via_sms($msisdn, $smsText);
 
 $response = [
     'message' => $smsSent ? 'OTP sent successfully' : 'OTP generated, but SMS sending may have failed',
