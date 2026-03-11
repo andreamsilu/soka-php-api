@@ -3,9 +3,13 @@
  * POST /sms/post/web
  * Request OTP for a phone number.
  * Expects header: securityKey
- * Body JSON or form: { MSISDN: string, text?: string }
- * - If "text" is provided, the OTP will be injected into that text by replacing
- *   "{otp}" or "{OTP}" tokens, or appended if no token is present.
+ * Body JSON or form: { MSISDN: string }
+ *
+ * The external SMS API is called with:
+ * {
+ *   "MSISDN": "<phone_number>",
+ *   "text": "<otp>"
+ * }
  */
 
 declare(strict_types=1);
@@ -16,8 +20,13 @@ require_once __DIR__ . '/UserRepository.php';
 
 /**
  * Send an SMS message to the given MSISDN via external SMS API.
+ * The payload format is:
+ * {
+ *   "MSISDN": "<phone_number>",
+ *   "text": "<otp>"
+ * }
  */
-function send_otp_via_sms(string $msisdn, string $messageText): bool
+function send_otp_via_sms(string $msisdn, string $otp): bool
 {
     if (!function_exists('curl_init')) {
         error_log('cURL extension is not available; cannot send SMS.');
@@ -25,8 +34,8 @@ function send_otp_via_sms(string $msisdn, string $messageText): bool
     }
 
     $payload = [
-        'msisdn' => $msisdn,
-        'text'   => $messageText,
+        'MSISDN' => $msisdn,
+        'text'   => $otp,
     ];
 
     $ch = curl_init();
@@ -88,18 +97,6 @@ if ($msisdn === '' || !is_valid_msisdn($msisdn)) {
 // Generate a 6-digit OTP
 $otp = (string) random_int(100000, 999999);
 
-// Determine SMS text (either provided by caller or default)
-$textTemplate = isset($data['text']) ? (string)$data['text'] : '';
-if ($textTemplate !== '') {
-    // Replace placeholder tokens if present; otherwise append OTP.
-    $smsText = str_replace(['{otp}', '{OTP}'], $otp, $textTemplate);
-    if ($smsText === $textTemplate) {
-        $smsText .= ' ' . $otp;
-    }
-} else {
-    $smsText = 'Your OTP code is ' . $otp;
-}
-
 // Use user_otp as the only source of truth:
 // if there is already a used OTP for this msisdn, treat the user as registered
 try {
@@ -137,7 +134,7 @@ try {
 }
 
 // Send the OTP via external SMS provider
-$smsSent = send_otp_via_sms($msisdn, $smsText);
+$smsSent = send_otp_via_sms($msisdn, $otp);
 
 $response = [
     'message' => $smsSent ? 'OTP sent successfully' : 'OTP generated, but SMS sending may have failed',
