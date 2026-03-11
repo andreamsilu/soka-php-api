@@ -2,7 +2,6 @@
 /**
  * POST /register/post/web
  * Verify OTP for registration.
- * Expects header: securityKey
  * Body JSON or form: { MSISDN: string, code: string }
  *
  * NOTE: user_otp is the only table used. A "registered user" is represented
@@ -20,13 +19,6 @@ header('Content-Type: application/json');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['message' => 'Method not allowed']);
-    exit;
-}
-
-$receivedKey = $_SERVER['HTTP_SECURITYKEY'] ?? '';
-if ($receivedKey !== API_SECURITY_KEY) {
-    http_response_code(401);
-    echo json_encode(['message' => 'Unauthorized']);
     exit;
 }
 

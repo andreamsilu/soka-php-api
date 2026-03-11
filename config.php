@@ -32,11 +32,8 @@ const DB_DSN  = env('DB_DSN', 'mysql:host=127.0.0.1;port=3306;dbname=soka;charse
 const DB_USER = env('DB_USER', 'soka_user');
 const DB_PASS = env('DB_PASS', 'soka_password');
 
-// Security key shared with the frontend (sent as `securityKey` header)
-const API_SECURITY_KEY = env('API_SECURITY_KEY', 'change-this-to-a-strong-secret');
-
 // External SMS provider configuration
 const SMS_API_URL          = env('SMS_API_URL', 'http://188.64.188.232/SOKATRIVIA-API-TEST/index.php/api/sms/post/web');
-const SMS_API_SECURITY_KEY = env('SMS_API_SECURITY_KEY', API_SECURITY_KEY);
+const SMS_API_SECURITY_KEY = env('SMS_API_SECURITY_KEY', 'change-this-to-sms-api-secret');
 
 

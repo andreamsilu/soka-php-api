@@ -2,7 +2,6 @@
 /**
  * POST /sms/post/web
  * Request OTP for a phone number.
- * Expects header: securityKey
  * Body JSON or form: { MSISDN: string }
  *
  * The external SMS API is called with:
@@ -69,13 +68,6 @@ header('Content-Type: application/json');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['message' => 'Method not allowed']);
-    exit;
-}
-
-$receivedKey = $_SERVER['HTTP_SECURITYKEY'] ?? '';
-if ($receivedKey !== API_SECURITY_KEY) {
-    http_response_code(401);
-    echo json_encode(['message' => 'Unauthorized']);
     exit;
 }
 
