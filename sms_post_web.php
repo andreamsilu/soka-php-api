@@ -98,7 +98,8 @@ if ($msisdn === '' || !is_valid_msisdn($msisdn)) {
 $otp = (string) random_int(100000, 999999);
 
 // Use user_otp as the only source of truth:
-// if there is already a used OTP for this msisdn, treat the user as registered
+// if there is already a used OTP for this msisdn, treat the user as registered.
+// We still generate and send a new OTP, but we also return the registration status.
 try {
     $pdo = get_pdo();
 
@@ -106,14 +107,7 @@ try {
         'SELECT id FROM user_otp WHERE msisdn = :msisdn AND is_used = 1 LIMIT 1'
     );
     $checkStmt->execute(['msisdn' => $msisdn]);
-    if ($checkStmt->fetch() !== false) {
-        http_response_code(200);
-        echo json_encode([
-            'message' => 'User already registered',
-            'user'    => ['msisdn' => $msisdn],
-        ]);
-        exit;
-    }
+    $isRegistered = $checkStmt->fetch() !== false;
 
     // Store OTP in MySQL table user_otp
     // Optionally mark previous unused OTPs for this msisdn as used
@@ -137,7 +131,9 @@ try {
 $smsSent = send_otp_via_sms($msisdn, $otp);
 
 $response = [
-    'message' => $smsSent ? 'OTP sent successfully' : 'OTP generated, but SMS sending may have failed',
+    'message'    => $smsSent ? 'OTP sent successfully' : 'OTP generated, but SMS sending may have failed',
+    'registered' => $isRegistered,
+    'user'       => ['msisdn' => $msisdn],
 ];
 
 // Only expose OTP in non-production environments for testing purposes.
