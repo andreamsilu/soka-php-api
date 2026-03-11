@@ -80,6 +80,17 @@ if ($msisdn === '' || !is_valid_msisdn($msisdn)) {
     exit;
 }
 
+// If user already exists, do not send an OTP again for registration.
+$existingUser = find_user_by_msisdn($msisdn);
+if ($existingUser !== null) {
+    http_response_code(200);
+    echo json_encode([
+        'message' => 'User already registered',
+        'user'    => build_user_payload($existingUser),
+    ]);
+    exit;
+}
+
 // Generate a 6-digit OTP
 $otp = (string) random_int(100000, 999999);
 
