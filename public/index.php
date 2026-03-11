@@ -47,6 +47,16 @@ if ($method === 'POST') {
     }
 }
 
+// Add before fallback
+if ($requestUri === '/' && $method === 'GET') {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'message' => 'SOKA PHP API is running!',
+        'status'  => 'ok',
+    ]);
+    exit;
+}
+
 // Fallback: 404 JSON response
 header('Content-Type: application/json', true, 404);
 echo json_encode([
