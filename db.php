@@ -19,7 +19,7 @@ function get_pdo(): PDO
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         ]);
-    } catch (PDOException $e) {
+    } catch (Throwable $e) {
         http_response_code(500);
         header('Content-Type: application/json');
         echo json_encode(['message' => 'Database connection failed']);
