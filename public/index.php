@@ -35,14 +35,25 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 // Routing table
 if ($method === 'POST') {
     switch ($requestUri) {
+        // New, clearer auth routes
+        case '/register':
+        case '/auth/otp/send':
+            require __DIR__ . '/../register.php';
+            exit;
+
+        case '/auth/otp/verify':
+            require __DIR__ . '/../verify_otp.php';
+            exit;
+
+        // Backwards-compatible legacy routes
         case '/api/sms/post/web':
         case '/sms/post/web':
-            require __DIR__ . '/../sms_post_web.php';
+            require __DIR__ . '/../register.php';
             exit;
 
         case '/api/register/post/web':
         case '/register/post/web':
-            require __DIR__ . '/../register_post_web.php';
+            require __DIR__ . '/../verify_otp.php';
             exit;
     }
 }

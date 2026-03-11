@@ -1,7 +1,8 @@
 <?php
 /**
- * POST /sms/post/web
- * Request OTP for a phone number.
+ * POST /register
+ * or POST /auth/otp/send
+ * Generate an OTP and send it via SMS (start registration).
  * Body JSON or form: { MSISDN: string }
  *
  * The external SMS API is called with:
@@ -86,12 +87,9 @@ if ($msisdn === '' || !is_valid_msisdn($msisdn)) {
     exit;
 }
 
-// Generate a 6-digit OTP
-$otp = (string) random_int(100000, 999999);
-
 // Use user_otp as the only source of truth:
-// if there is already a used OTP for this msisdn, treat the user as registered.
-// We still generate and send a new OTP, but we also return the registration status.
+// if there is already a used OTP for this msisdn, treat the user as registered
+// and do NOT send another OTP.
 try {
     $pdo = get_pdo();
 
@@ -100,6 +98,19 @@ try {
     );
     $checkStmt->execute(['msisdn' => $msisdn]);
     $isRegistered = $checkStmt->fetch() !== false;
+
+    if ($isRegistered) {
+        http_response_code(200);
+        echo json_encode([
+            'message'    => 'User already registered',
+            'registered' => true,
+            'user'       => ['msisdn' => $msisdn],
+        ]);
+        exit;
+    }
+
+    // Generate a 6-digit OTP for new registration
+    $otp = (string) random_int(100000, 999999);
 
     // Store OTP in MySQL table user_otp
     // Optionally mark previous unused OTPs for this msisdn as used
@@ -124,7 +135,7 @@ $smsSent = send_otp_via_sms($msisdn, $otp);
 
 $response = [
     'message'    => $smsSent ? 'OTP sent successfully' : 'OTP generated, but SMS sending may have failed',
-    'registered' => $isRegistered,
+    'registered' => false,
     'user'       => ['msisdn' => $msisdn],
 ];
 

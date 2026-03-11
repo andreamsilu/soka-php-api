@@ -1,7 +1,7 @@
 <?php
 /**
- * POST /register/post/web
- * Verify OTP for registration.
+ * POST /auth/otp/verify
+ * Verify OTP for registration (complete registration).
  * Body JSON or form: { MSISDN: string, code: string }
  *
  * NOTE: user_otp is the only table used. A "registered user" is represented
