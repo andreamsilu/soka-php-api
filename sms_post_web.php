@@ -19,6 +19,11 @@ require_once __DIR__ . '/UserRepository.php';
  */
 function send_otp_via_sms(string $msisdn, string $messageText): bool
 {
+    if (!function_exists('curl_init')) {
+        error_log('cURL extension is not available; cannot send SMS.');
+        return false;
+    }
+
     $payload = [
         'msisdn' => $msisdn,
         'text'   => $messageText,
