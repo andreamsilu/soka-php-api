@@ -1,9 +1,12 @@
 <?php
 /**
  * POST /register/post/web
- * Verify OTP and create user.
+ * Verify OTP for registration.
  * Expects header: securityKey
  * Body JSON or form: { MSISDN: string, code: string }
+ *
+ * NOTE: user_otp is the only table used. A "registered user" is represented
+ * by at least one row in user_otp with is_used = 1 for the given MSISDN.
  */
 
 declare(strict_types=1);
@@ -90,18 +93,10 @@ try {
     exit;
 }
 
-// Check if user exists, else create
-$existing = find_user_by_msisdn($msisdn);
-if ($existing === null) {
-    $userRow = create_user_with_msisdn($msisdn);
-} else {
-    $userRow = $existing;
-}
-
-$userPayload = build_user_payload($userRow);
-
 echo json_encode([
     'message' => 'Registration successful',
-    'user'    => $userPayload,
+    'user'    => [
+        'msisdn' => $msisdn,
+    ],
 ]);
 

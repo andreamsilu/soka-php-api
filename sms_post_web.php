@@ -85,17 +85,6 @@ if ($msisdn === '' || !is_valid_msisdn($msisdn)) {
     exit;
 }
 
-// If user already exists, do not send an OTP again for registration.
-$existingUser = find_user_by_msisdn($msisdn);
-if ($existingUser !== null) {
-    http_response_code(200);
-    echo json_encode([
-        'message' => 'User already registered',
-        'user'    => build_user_payload($existingUser),
-    ]);
-    exit;
-}
-
 // Generate a 6-digit OTP
 $otp = (string) random_int(100000, 999999);
 
@@ -111,10 +100,25 @@ if ($textTemplate !== '') {
     $smsText = 'Your OTP code is ' . $otp;
 }
 
-// Store OTP in MySQL table user_otp
+// Use user_otp as the only source of truth:
+// if there is already a used OTP for this msisdn, treat the user as registered
 try {
     $pdo = get_pdo();
 
+    $checkStmt = $pdo->prepare(
+        'SELECT id FROM user_otp WHERE msisdn = :msisdn AND is_used = 1 LIMIT 1'
+    );
+    $checkStmt->execute(['msisdn' => $msisdn]);
+    if ($checkStmt->fetch() !== false) {
+        http_response_code(200);
+        echo json_encode([
+            'message' => 'User already registered',
+            'user'    => ['msisdn' => $msisdn],
+        ]);
+        exit;
+    }
+
+    // Store OTP in MySQL table user_otp
     // Optionally mark previous unused OTPs for this msisdn as used
     $markStmt = $pdo->prepare('UPDATE user_otp SET is_used = 1 WHERE msisdn = :msisdn AND is_used = 0');
     $markStmt->execute(['msisdn' => $msisdn]);
