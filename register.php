@@ -20,28 +20,27 @@ require_once __DIR__ . '/UserRepository.php';
 
 /**
  * Send an SMS message to the given MSISDN via external SMS API.
- * The payload format is:
- * {
- *   "MSISDN": "<phone_number>",
- *   "text": "<otp>"
- * }
+ * The SMS API in your other system is a classic PHP endpoint and most
+ * likely reads values from $_POST and headers, not raw JSON.
  *
- * Uses file_get_contents with a stream context (no cURL dependency).
+ * We therefore send data as application/x-www-form-urlencoded, matching
+ * what Postman usually does when configured with form-data/urlencoded.
  */
 function send_otp_via_sms(string $msisdn, string $otp): bool
 {
-    // Payload expected by the SMS API:
-    // { "msisdn": "<phone_number>", "text": "<otp>" }
-    $payload = json_encode([
-        'msisdn' => $msisdn,
-        'text'   => $otp,
+    // Payload expected by the SMS API (as form fields):
+    // msisdn=<phone_number>&text=<otp>&securityKey=<key>
+    $payload = http_build_query([
+        'msisdn'      => $msisdn,
+        'text'        => $otp,
+        'securityKey' => 'b2dc84400b5cbfd409d798609d4fba75',
     ]);
 
     $opts = [
         'http' => [
             'method'  => 'POST',
             'header'  =>
-                "Content-Type: application/json\r\n" .
+                "Content-Type: application/x-www-form-urlencoded\r\n" .
                 "securityKey: b2dc84400b5cbfd409d798609d4fba75\r\n",
             'content' => $payload,
             'timeout' => 10,
