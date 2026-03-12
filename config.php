@@ -15,7 +15,7 @@ const DB_USER = 'root';
 const DB_PASS = 'gfmLvsb}qXB4+Ayk';
 
 // External SMS provider configuration (configured directly, no .env)
-const SMS_API_URL          = 'http://188.64.188.232/SOKATRIVIA-API-TEST/index.php/api/sms/post/web';
+const SMS_API_URL = 'http://188.64.188.232/SOKATRIVIA-API-TEST/index.php/api/sms/post/web';
 const SMS_API_SECURITY_KEY = 'b2dc84400b5cbfd409d798609d4fba75';
 
 
