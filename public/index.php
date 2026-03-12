@@ -44,6 +44,11 @@ if ($method === 'POST') {
             require __DIR__ . '/../register.php';
             exit;
 
+        case '/login':
+        case '/auth/login':
+            require __DIR__ . '/../login.php';
+            exit;
+
         case '/auth/otp/verify':
             require __DIR__ . '/../verify_otp.php';
             exit;
