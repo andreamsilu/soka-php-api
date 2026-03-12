@@ -144,14 +144,23 @@ try {
         'msisdn' => $msisdn,
         'otp'    => $otp,
     ]);
+
+    // Fetch the just-stored OTP from the database to ensure we send
+    // exactly what is persisted.
+    $selectStmt = $pdo->prepare(
+        'SELECT otp FROM user_otp WHERE msisdn = :msisdn ORDER BY insert_date DESC LIMIT 1'
+    );
+    $selectStmt->execute(['msisdn' => $msisdn]);
+    $row = $selectStmt->fetch(PDO::FETCH_ASSOC);
+    $otpToSend = $row !== false ? (string)$row['otp'] : $otp;
 } catch (Throwable $e) {
     http_response_code(500);
     echo json_encode(['message' => 'Failed to store OTP']);
     exit;
 }
 
-// Send the OTP via external SMS provider
-$smsSent = send_otp_via_sms($msisdn, $otp);
+// Send the OTP via external SMS provider, using the stored value
+$smsSent = send_otp_via_sms($msisdn, $otpToSend);
 
 echo json_encode([
     'message'    => $smsSent ? 'OTP sent successfully' : 'OTP generated, but SMS sending may have failed',
