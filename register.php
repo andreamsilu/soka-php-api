@@ -25,43 +25,48 @@ require_once __DIR__ . '/UserRepository.php';
  *   "MSISDN": "<phone_number>",
  *   "text": "<otp>"
  * }
+ *
+ * Uses file_get_contents with a stream context (no cURL dependency).
  */
 function send_otp_via_sms(string $msisdn, string $otp): bool
 {
-    if (!function_exists('curl_init')) {
-        error_log('cURL extension is not available; cannot send SMS.');
+    $payload = json_encode([
+        'MSISDN' => $msisdn,
+        'text'   => $otp,
+    ]);
+
+    $opts = [
+        'http' => [
+            'method'  => 'POST',
+            'header'  =>
+                "Content-Type: application/json\r\n" .
+                "securityKey: " . SMS_API_SECURITY_KEY . "\r\n",
+            'content' => $payload,
+            'timeout' => 10,
+        ],
+    ];
+
+    $context = stream_context_create($opts);
+    $responseBody = @file_get_contents(SMS_API_URL, false, $context);
+
+    if ($responseBody === false) {
+        $error = error_get_last();
+        error_log('SMS HTTP error: ' . ($error['message'] ?? 'unknown error'));
         return false;
     }
 
-    $payload = [
-        'msisdn' => $msisdn,
-        'text'   => $otp,
-    ];
-
-    $ch = curl_init();
-    curl_setopt_array($ch, [
-        CURLOPT_URL            => SMS_API_URL,
-        CURLOPT_POST           => true,
-        CURLOPT_HTTPHEADER     => [
-            'Content-Type: application/json',
-            'securityKey: ' . SMS_API_SECURITY_KEY,
-        ],
-        CURLOPT_POSTFIELDS     => json_encode($payload),
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 10,
-    ]);
-
-    $responseBody = curl_exec($ch);
-    $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-    if ($responseBody === false) {
-        error_log('SMS cURL error: ' . curl_error($ch));
-        curl_close($ch);
-        return false;
+    // Capture HTTP status code from $http_response_header if available
+    $httpCode = 0;
+    if (isset($http_response_header) && is_array($http_response_header)) {
+        foreach ($http_response_header as $headerLine) {
+            if (preg_match('#^HTTP/\S+\s+(\d{3})#', $headerLine, $m)) {
+                $httpCode = (int)$m[1];
+                break;
+            }
+        }
     }
 
     error_log('SMS API response: HTTP ' . $httpCode . ' ' . $responseBody);
-    curl_close($ch);
 
     return $httpCode >= 200 && $httpCode < 300;
 }
