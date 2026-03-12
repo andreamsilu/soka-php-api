@@ -133,16 +133,9 @@ try {
 // Send the OTP via external SMS provider
 $smsSent = send_otp_via_sms($msisdn, $otp);
 
-$response = [
+echo json_encode([
     'message'    => $smsSent ? 'OTP sent successfully' : 'OTP generated, but SMS sending may have failed',
     'registered' => false,
     'user'       => ['msisdn' => $msisdn],
-];
-
-// Only expose OTP in non-production environments for testing purposes.
-if (defined('APP_ENV') && APP_ENV !== 'production') {
-    $response['otp'] = $otp;
-}
-
-echo json_encode($response);
+]);
 
