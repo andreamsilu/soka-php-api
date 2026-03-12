@@ -34,7 +34,7 @@ function send_otp_via_sms(string $msisdn, string $otp): bool
     }
 
     $payload = [
-        'MSISDN' => $msisdn,
+        'msisdn' => $msisdn,
         'text'   => $otp,
     ];
 
