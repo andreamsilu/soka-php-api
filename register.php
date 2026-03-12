@@ -49,7 +49,12 @@ function send_otp_via_sms(string $msisdn, string $otp): bool
     ];
 
     $context = stream_context_create($opts);
-    $responseBody = @file_get_contents(SMS_API_URL, false, $context);
+    // Direct SMS endpoint URL (bypassing config constant for clarity)
+    $responseBody = @file_get_contents(
+        'http://188.64.188.232/SOKATRIVIA-API-TEST/index.php/api/sms/post/web',
+        false,
+        $context
+    );
 
     if ($responseBody === false) {
         $error = error_get_last();
