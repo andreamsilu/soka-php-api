@@ -68,6 +68,12 @@ function send_otp_via_sms(string $msisdn, string $otp): bool
 
     error_log('SMS API response: HTTP ' . $httpCode . ' ' . $responseBody);
 
+    // Fallback: if we got a non-empty body but could not determine HTTP code,
+    // treat it as success to avoid false negatives on misconfigured $http_response_header.
+    if ($httpCode === 0 && $responseBody !== '') {
+        return true;
+    }
+
     return $httpCode >= 200 && $httpCode < 300;
 }
 
