@@ -42,7 +42,7 @@ function send_otp_via_sms(string $msisdn, string $otp): bool
             'method'  => 'POST',
             'header'  =>
                 "Content-Type: application/json\r\n" .
-                "securityKey: " . SMS_API_SECURITY_KEY . "\r\n",
+                "securityKey: b2dc84400b5cbfd409d798609d4fba75\r\n",
             'content' => $payload,
             'timeout' => 10,
         ],
