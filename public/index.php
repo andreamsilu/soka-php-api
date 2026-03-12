@@ -10,6 +10,9 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../db.php';
+
 // Normalize the request path relative to this index.php
 $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
 $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
@@ -61,9 +64,19 @@ if ($method === 'POST') {
 // Add before fallback
 if ($requestUri === '/' && $method === 'GET') {
     header('Content-Type: application/json');
+
+    $dbOk = false;
+    try {
+        $pdo = get_pdo();
+        $dbOk = $pdo !== null;
+    } catch (Throwable $e) {
+        $dbOk = false;
+    }
+
     echo json_encode([
-        'message' => 'SOKA PHP API is running!',
-        'status'  => 'ok',
+        'message'        => 'SOKA PHP API is running!',
+        'status'         => 'ok',
+        'databaseStatus' => $dbOk ? 'connected' : 'error',
     ]);
     exit;
 }
