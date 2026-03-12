@@ -55,10 +55,12 @@ function send_otp_via_sms(string $msisdn, string $otp): bool
     $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
     if ($responseBody === false) {
+        error_log('SMS cURL error: ' . curl_error($ch));
         curl_close($ch);
         return false;
     }
 
+    error_log('SMS API response: HTTP ' . $httpCode . ' ' . $responseBody);
     curl_close($ch);
 
     return $httpCode >= 200 && $httpCode < 300;
