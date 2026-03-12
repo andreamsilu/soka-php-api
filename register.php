@@ -30,8 +30,10 @@ require_once __DIR__ . '/UserRepository.php';
  */
 function send_otp_via_sms(string $msisdn, string $otp): bool
 {
+    // Payload expected by the SMS API:
+    // { "msisdn": "<phone_number>", "text": "<otp>" }
     $payload = json_encode([
-        'MSISDN' => $msisdn,
+        'msisdn' => $msisdn,
         'text'   => $otp,
     ]);
 
