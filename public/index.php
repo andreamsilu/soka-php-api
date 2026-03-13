@@ -64,6 +64,11 @@ if ($method === 'POST') {
             require __DIR__ . '/../verify_otp.php';
             exit;
 
+        // Subscription proxy route
+        case '/subscribe/web':
+            require __DIR__ . '/../subscribe.php';
+            exit;
+
         // Backwards-compatible legacy routes
         case '/api/sms/post/web':
         case '/sms/post/web':
