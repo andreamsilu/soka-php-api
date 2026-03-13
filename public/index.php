@@ -15,7 +15,7 @@ require_once __DIR__ . '/../db.php';
 
 // Basic CORS support for browser clients (Next.js frontend)
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Headers: Content-Type, securityKey, X-Requested-With');
+header('Access-Control-Allow-Headers: Content-Type, securityKey, securitykey, X-Requested-With');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 
 // Handle CORS preflight requests early
