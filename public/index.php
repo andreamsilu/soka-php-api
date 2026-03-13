@@ -13,6 +13,17 @@ declare(strict_types=1);
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../db.php';
 
+// Basic CORS support for browser clients (Next.js frontend)
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Content-Type, securityKey, X-Requested-With');
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+
+// Handle CORS preflight requests early
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
 // Normalize the request path relative to this index.php
 $requestUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
 $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
