@@ -44,8 +44,7 @@ $opts = [
         'method'  => 'POST',
         'header'  =>
             "Content-Type: application/x-www-form-urlencoded\r\n" .
-            // Match Postman exactly: header name "securitykey" (all lowercase)
-            "securitykey: " . SMS_API_SECURITY_KEY . "\r\n",
+            "securityKey: " . SMS_API_SECURITY_KEY . "\r\n",
         'content' => $payload,
         'timeout' => 15,
     ],
