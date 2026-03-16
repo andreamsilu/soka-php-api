@@ -36,14 +36,15 @@ if ($msisdn === '') {
     exit;
 }
 
-// Build form-encoded body for upstream API (MSISDN=...)
-$payload = http_build_query(['MSISDN' => $msisdn], '', '&');
+// Build JSON payload for upstream API
+$payload = json_encode(['MSISDN' => $msisdn]);
 
 $opts = [
     'http' => [
         'method'  => 'POST',
         'header'  =>
-            "Content-Type: application/x-www-form-urlencoded\r\n" .
+            "Content-Type: application/json\r\n" .
+            // Match Postman header name exactly
             "securitykey: " . SMS_API_SECURITY_KEY . "\r\n",
         'content' => $payload,
         'timeout' => 15,
