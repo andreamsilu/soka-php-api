@@ -28,7 +28,8 @@ if (!is_array($data)) {
     $data = $_POST;
 }
 
-$msisdn = isset($data['MSISDN']) ? (string)$data['MSISDN'] : '';
+$msisdnField = $data['msisdn'] ?? $data['MSISDN'] ?? '';
+$msisdn = (string)$msisdnField;
 $code   = isset($data['code']) ? (string)$data['code'] : (isset($data['otp']) ? (string)$data['otp'] : '');
 $msisdn = normalize_msisdn($msisdn);
 

@@ -94,8 +94,8 @@ if (!is_array($data)) {
     $data = $_POST;
 }
 
-$msisdn = isset($data['MSISDN']) ? (string)$data['MSISDN'] : '';
-$msisdn = normalize_msisdn($msisdn);
+$msisdnField = $data['msisdn'] ?? $data['MSISDN'] ?? '';
+$msisdn = normalize_msisdn((string)$msisdnField);
 
 if ($msisdn === '' || !is_valid_msisdn($msisdn)) {
     http_response_code(400);
